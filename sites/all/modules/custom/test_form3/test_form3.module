@@ -31,7 +31,7 @@ function test_form3_form_alter(&$form, &$form_state, $form_id){
                         }
                   }
                else{
-                         drupal_set_message("NO SEATS AVAILABLE!!",'warning');
+                         drupal_set_message("NO SEATS AVAILABLE!!!",'warning');
                         $form['field_no_of_seats']['und']['#disabled'] = TRUE;
                         $form['actions']['submit']['#disabled'] = TRUE;
                        // drupal_goto('<front>');
