@@ -1,0 +1,106 @@
+<?php
+function test_form3_form_alter(&$form, &$form_state, $form_id){
+  dpm($form);
+  global $user;
+  $roles = $user->roles;
+               
+    if($form_id == 'event_registration_node_form'){
+
+            if(!in_array('administrator', $roles)){
+
+                if(!isset($_GET['field_event_id'])){
+                        drupal_goto('<front>');
+                 }
+                $form['field_user_id']['und']['#default_value']=$user->uid;
+                $form['field_user_id']['und']['#disabled']= TRUE;
+            }
+
+              $eid=$form['field_event_id']['und']['#default_value'][0];
+	          $node=node_load($eid);
+
+	          $form['field_paid_amount']['und'][0]['value']['#default_value']=$node->field_booking_amount['und'][0]['value'];
+	          $form['field_paid_amount']['und']['#disabled']= TRUE;
+              $form['field_total_amount']['#access']= FALSE;
+
+              $ab=$node->field_capacityev['und'][0]['value'];
+                if($ab>0){
+                    drupal_set_message('REMAINING SEATS: ' .$ab);
+                   if($ab<20) {
+                          drupal_get_messages(); 
+                          drupal_set_message('HURRY!! REMAINING SEATS: ' .$ab);
+                        }
+                  }
+               else{
+                         drupal_set_message("NO SEATS AVAILABLE!!",'warning');
+                        $form['field_no_of_seats']['und']['#disabled'] = TRUE;
+                        $form['actions']['submit']['#disabled'] = TRUE;
+                       // drupal_goto('<front>');
+                }
+            
+
+	       $form['#validate'][]='test33';
+     }
+}
+
+  function test33($form,&$form_state){
+	   $a=intval($form['field_paid_amount']['und'][0]['value']['#default_value']);
+       $b=intval($form['field_no_of_seats']['und'][0]['value']['#value']);
+        $payment=$a * $b;
+         form_set_value($form['field_total_amount']['und'][0]['value'],$payment,$form_state);
+
+              $cid=$form['field_event_id']['und']['#default_value'][0];
+              $node1=node_load($cid);  
+              dpm($node1);
+              $c=$node1->field_capacityev['und'][0]['value'];
+              $node1->field_capacityev['und'][0]['value']=$c-$b;
+              
+             drupal_get_messages();
+              $cd=$node1->field_capacityev['und'][0]['value'];
+            /* if($cd>0)
+                    drupal_set_message('HURRY!! REMAINING SEATS: ' .$cd);
+               else{
+                         drupal_set_message("NO SEATS AVAILABLE!!",'warning');
+                
+                }
+
+               if($cd<0){
+                    
+                 form_set_error('');
+                 drupal_set_message('REMAINING SEATS: ' .$c);
+              }
+              else{
+
+                 node_save($node1); 
+            
+            }   */
+
+            if($cd>=0){
+                  
+                      if($cd==0){
+                          drupal_get_messages(); 
+                          drupal_set_message("NO SEATS AVAILABLE!!",'warning');
+                      }
+                     elseif($cd<20) {
+                          drupal_get_messages(); 
+                          drupal_set_message('HURRY!! REMAINING SEATS: ' .$cd);
+                        }
+                      else
+                        drupal_set_message('REMAINING SEATS: ' .$cd);
+                  node_save($node1); 
+
+                 }
+            
+        else{
+                  drupal_set_message("SEATS UNAVAILABLE!!",'warning');
+                  form_set_error('');
+                 drupal_set_message('REMAINING SEATS: ' .$c);
+            }
+          
+
+                
+            
+
+
+    }
+
+?>

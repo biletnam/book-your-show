@@ -1,0 +1,120 @@
+	<?php
+
+	function test_form1_menu() {
+		$items = array();
+
+		$items['examples/test_form1'] = array(//this creates a URL that will call this form at "examples/form-example"
+		'title' => 'Test Form 1', //page title
+		'description' => 'A form to mess around with.', 'page callback' => 'drupal_get_form', //this is the function that will be called when the page is accessed.  for a form, use drupal_get_form
+		'page arguments' => array('test_form1_form'), //put the name of the form here
+		'access callback' => TRUE);
+
+		return $items;
+	}
+
+	function test_form1_form($form, &$form_state) {
+
+		$form['price'] = array('#type' => 'textfield', //you can find a list of available types in the form api
+		'#title' => 'What is Your Price?', '#size' => 10, '#maxlength' => 10, '#required' => TRUE, //make this field required
+		);
+
+		$form['name'] = array('#type' => 'textfield', //you can find a list of available types in the form api
+		'#title' => 'What is Your Name?', '#size' => 20, '#maxlength' => 100, '#required' => TRUE, //make this field required
+		);
+		$form['pass'] = array('#type' => 'password', '#title' => t('Password'), '#maxlength' => 64, '#size' => 15,
+			'#required' => TRUE,
+		 );
+		/*$form['pass'] = array('#type' => 'password_confirm',
+
+		// '#title' => t('Password'),
+
+		'#size' => 25, );*/
+
+		$form['email'] = array('#type' => 'textfield', //you can find a list of available types in the form api
+		'#title' => 'What is Your EmailId?', '#size' => 30, '#maxlength' => 100, '#required' => TRUE, //make this field required
+		);
+
+		$form['submit_button'] = array('#type' => 'submit', '#value' => t('Click Here!'), );
+
+		return $form;
+	}
+
+	function test_form1_form_validate($form, &$form_state) {
+		if (!($form_state['values']['price'] >= 0)) {
+			form_set_error('price', t('Price must be a positive number.'));
+		}
+		if (!preg_match('/^[a-zA-Z\s]+$/', $form_state['values']['name'])) {
+			form_set_error('name', t('Name should contain only alphabets!!'));
+		}
+		/*if(empty($form_state['values']['pass'])){
+			form_set_error('pass', t('Password Field Required'));
+		}*/
+	}
+		
+		
+	
+
+	function test_form1_form_submit($form, &$form_state) {
+		global $user;
+
+		$values = array('type' => 'test1', 'uid' => $user -> uid, 'status' => 1, 'comment' => 0, 'promote' => 0, );
+			$query = new EntityFieldQuery();
+
+	$query->entityCondition('entity_type', 'node')
+	  ->entityCondition('bundle', 'test1')
+	 // ->propertyCondition('status', NODE_PUBLISHED)
+	  ->fieldCondition('field_email', 'value', $form_state['values']['email'], '=');
+	  //->fieldCondition('field_photo', 'fid', 'NULL', '!=')
+	  ////->fieldCondition('field_faculty_tag', 'tid', $value)
+	 // ->fieldCondition('field_news_publishdate', 'value', $year . '%', 'like')
+	  //->fieldOrderBy('field_name_', 'fid', 'DESC')
+	  //->range(0, 10)
+	 // ->addMetaData('account', user_load(1)); // Run the query as user 1.
+
+	$result = $query->execute();
+
+	if (isset($result['node'])) {
+	  //$news_items_nids = array_keys($result['node']);
+	  //$news_items = entity_load('node', $news_items_nids);
+	 //form_set_error('email',t("EmailId already exists")); 
+	  $nid = array_keys($result['node']);
+	  $node = entity_load('node',$nid);
+	  $node = array_shift($node);
+	  $node->field_price['und'][0]['value']=$form_state['values']['price'];
+	  entity_save('node', $node);
+	  drupal_set_message("Form updated at " . date('d-m-Y h:i:s'));
+	 
+	}
+	else {
+		$entity = entity_create('node', $values);
+
+		$ewrapper = entity_metadata_wrapper('node', $entity);
+
+		$ewrapper -> title -> set($form_state['values']['name']);
+
+		//$my_body_content = 'A bunch of text about things that interest me';
+		//$ewrapper->body->set(array('value' => $my_body_content));
+		//$ewrapper->body->summary->set('Things that interest me');
+
+		//$ref_nid = 15;
+
+		//$ewrapper->field_my_entity_ref->set(intval($ref_nid));
+		$ewrapper -> field_name_ -> set($form_state['values']['name']);
+		$ewrapper -> field_password -> set($form_state['values']['pass']);
+		$ewrapper -> field_price -> set($form_state['values']['price']);
+		$ewrapper -> field_email -> set($form_state['values']['email']);
+
+		//$my_date = new DateTime('January 1, 2013');
+		/*$entity->field_my_date[LANGUAGE_NONE][0] = array(
+		 'value' => date_format($my_date, 'Y-m-d'),
+		 'timezone' => 'UTC',
+		 'timezone_db' => 'UTC',
+		 );*/
+
+		$ewrapper -> save();
+
+		drupal_set_message("Form submitted at " . date('d-m-Y h:i:s'));
+	}
+		
+	}
+	?>

@@ -1,0 +1,4 @@
+core = "7.x"
+description = "An example module used to learn module development and forms creation."
+name = "Test Form3 Module"
+dependencies[]='capacity_test'

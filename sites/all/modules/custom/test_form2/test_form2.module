@@ -1,0 +1,141 @@
+		<?php
+
+		function test_form2_menu() {
+			$items = array();
+
+			$items['examples/test_form2'] = array(
+			'title' => 'Test Form 2',
+			'description' => 'A form to mess around with.', 
+			'page callback' => 'drupal_get_form', 
+			'page arguments' => array('test_form2_form'), 
+			'access callback' => TRUE
+			);
+
+			return $items;
+		}
+
+		function test_form2_form($form, &$form_state) {
+
+			$form['name'] = array('#type' => 'textfield',
+			'#title' => 'What is Your Name?',
+			 '#size' => 20,
+			 '#maxlength' => 100, 
+			 '#required' => TRUE, 
+			);
+
+			$form['email'] = array(
+			'#type' => 'textfield', 
+			'#title' => 'What is Your EmailId?',
+			 '#size' => 30,
+			  '#maxlength' => 100,
+			   '#required' => TRUE, 
+			);
+
+			$form['phno'] = array(
+			'#type' => 'textfield', 
+			'#title' => 'What is Your Phone No.?',
+			 '#size' => 30,
+			  '#maxlength' => 100,
+			   '#required' => TRUE, 
+			   );
+
+			$form['submit_button'] = array(
+				'#type' => 'submit',
+				 '#value' => t('Click Here!'),
+				  );
+
+			return $form;
+		}
+
+		function test_form2_form_validate($form, &$form_state) {
+		
+			if (!preg_match('/^[a-zA-Z\s]+$/', $form_state['values']['name'])) {
+				form_set_error('name', t('Name should contain only alphabets!!'));
+			}
+	$query = new EntityFieldQuery();
+
+		$query->entityCondition('entity_type', 'node')
+		  ->entityCondition('bundle', 'test2')
+		 
+		  ->fieldCondition('field_emailid', 'value', $form_state['values']['email'], '=');
+		 
+		$result = $query->execute();
+
+		if (isset($result['node'])) {
+
+		 form_set_error('email',t("EmailId already exists")); 
+		 /* $nid = array_keys($result['node']);
+		  $node = entity_load('node',$nid);
+		  $node = array_shift($node);
+		  $node->field_['und'][0]['value']=$form_state['values']['price'];
+		  entity_save('node', $node);
+		  drupal_set_message("Form updated at " . date('d-m-Y h:i:s'));*/
+		 
+		}
+		}
+			
+
+		function test_form2_form_submit($form, &$form_state) {
+			global $user;
+			$values = array('type' => 'test2',
+			 'uid' => $user -> uid, 
+			 'status' => 1,
+			  'comment' => 0,
+			   'promote' => 0, );
+		/*	$query = new EntityFieldQuery();
+
+		$query->entityCondition('entity_type', 'node')
+		  ->entityCondition('bundle', 'test2')
+		 
+		  ->fieldCondition('field_emailid', 'value', $form_state['values']['email'], '=');
+		 
+		$result = $query->execute();
+
+		if (isset($result['node'])) {
+
+		// form_set_error('email',t("EmailId already exists")); 
+		  $nid = array_keys($result['node']);
+		  $node = entity_load('node',$nid);
+		  $node = array_shift($node);
+		  $node->field_phone_no_['und'][0]['value']=$form_state['values']['phno'];
+		  entity_save('node', $node);
+		  drupal_set_message("Form updated at " . date('d-m-Y h:i:s'));
+		 
+		}
+else{*/
+			
+				
+			$entity = entity_create('node', $values);
+
+			$ewrapper = entity_metadata_wrapper('node', $entity);
+
+			$ewrapper -> title -> set($form_state['values']['name']);
+
+			$ewrapper -> field_name1 -> set($form_state['values']['name']);
+			$ewrapper -> field_emailid -> set($form_state['values']['email']);
+			$ewrapper -> field_phone_no_ -> set($form_state['values']['phno']);
+
+
+			$ewrapper -> save();
+			drupal_set_message("Form submitted at " . date('d-m-Y h:i:s'));
+			//}
+			$query = new EntityFieldQuery();
+
+		$query->entityCondition('entity_type', 'node')
+		  ->entityCondition('bundle', 'test2')
+		 
+		->fieldCondition('field_emailid', 'value', $form_state['values']['email'], '=');
+		 
+		$result = $query->execute();
+
+		if (isset($result['node'])) {
+
+		 $nid = array_keys($result['node']); 
+		}
+
+			
+			$form_state['redirect'] ='test-form/'.$nid[0];
+			
+			}
+			
+		?>

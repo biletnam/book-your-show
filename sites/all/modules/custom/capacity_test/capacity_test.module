@@ -1,0 +1,29 @@
+<?php
+function capacity_test_form_alter(&$form, &$form_state, $form_id){
+               // dpm($form);
+               // dpm($form_id);
+                 global $user;
+                 //dpm($user);
+                 $roles = $user->roles;
+                
+
+if($form_id == 'event_node_form' && in_array('administrator',$roles)){
+                $form['field_capacityev']['#disabled']= TRUE;
+               $form['#validate'][]='test44';
+        }
+    }
+     function test44($form,&$form_state){
+
+     //dpm($form);
+    $lid=$form['field_location_id']['und']['#value'];
+    //dpm($lid);
+    $node=node_load($lid);
+    //dpm($node);
+    $b=$node->field_capacity['und'][0]['value'];
+    form_set_value($form['field_capacityev']['und'][0]['value'],$b,$form_state);
+   // $form['field_capacityev']['und'][0]['value']['#value']=$node->field_capacity['und'][0]['value'];
+
+
+}
+
+?>

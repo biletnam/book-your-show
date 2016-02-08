@@ -1,0 +1,18 @@
+<?php
+function form_example_form_alter(&$form, $form_state, $form_id)  {
+	
+	if($form_id=="search_block_form")  {
+  $form['search_block_form']['#title']="My Search";
+  $form['search_block_form']['#title_display']='before';
+  $form['search_block_form']['#size']='30';
+  $form['search_block_form']['#default_value']="Enter Your Search Term";
+  
+	}
+
+  	//dpm($form);
+	//dpm($form_id);
+	global $user;
+	//dpm($user);
+
+  }
+
